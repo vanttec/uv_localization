@@ -1,40 +1,45 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+'''
+----------------------------------------------------------
+    @file: accel_increment.py
+    @date: 9/3/2021
+    @author: Yulisa Medina
+    @e-mail: a01570056@itesm.mx
+    @brief: ROS node to simulate accelerations
+    @version: 1.0
+    Open source
+---------------------------------------------------------
+'''
 
 import rospy
 from nav_msgs.msg import Odometry
+from gazebo_msgs.msg import ModelStates, ModelState
+from sensor_msgs import Imu
  
- def updateAccel(msg,publisher_accel_increment):
- 	odom = Odometry()
-    odom.header.stamp = rospy.Time.now()
-    odom.header.frame_id = "odom"
-    odom.child_frame_id = "vtec_u3/base_link"
+def updateAccel(msg,publisher_accel_increment):
+  modelState = ModelState()
+  modelState.model_name = msg.name[2]
+  modelState.pose = msg.pose[2]
 
-    odom.twist.twist.linear = [msg.odom.twist.twist.linear.x + 10, msg.odom.twist.twist.linear.y + 10, msg.odom.twist.twist.linear.z + 10]
-    # odom.twist.twist.linear.x = msg.odom.twist.twist.linear.x + 10
-    # odom.twist.twist.linear.y = msg.odom.twist.twist.linear.y + 10
-    # odom.twist.twist.linear.z = msg.odom.twist.twist.linear.z + 10
+  modelState.twist.linear.x = msg.twist[2].linear.x + 0.1
+  modelState.twist.linear.y = msg.twist[2].linear.y
+  modelState.twist.linear.z = msg.twist[2].linear.z
+  
+  modelState.twist.angular.x = msg.twist[2].angular.x
+  modelState.twist.angular.y = msg.twist[2].angular.y
+  modelState.twist.angular.z = msg.twist[2].angular.z
 
-    odom.twist.twist.angular = [msg.odom.twist.twist.angular.x + 10, msg.odom.twist.twist.angular.y + 10, msg.odom.twist.twist.angular.z + 10]
-    # odom.twist.twist.angular.x = msg.odom.twist.twist.angular.x + 10
-    # odom.twist.twist.angular.y = msg.odom.twist.twist.angular.y + 10
-    # odom.twist.twist.angular.z = msg.odom.twist.twist.angular.z + 10
-
-    # rospy.loginfo(odom)
-
-    # Cada dos segundos
-    rate = rospy.Rate(0.5) 
-
-    while not rospy.is_shutdown():
-		publisher_accel_increment.publish(odom)
+  rospy.loginfo(modelState)
+  publisher_accel_increment.publish(modelState)
 
 
- def accel_increment():
- 	rospy.init_node('accel_increment')
- 	publisher_accel_increment = rospy.Publisher('/vtec_u3/accel_increment', Odometry, queue_size= 10)
- 	# Nombre de topico para obtener odometria del robot
- 	rospy.Subscriber('/gazebo/model_states', Odometry, updateAccel, publisher_accel_increment)
- 	rospy.spin()
+def accel_increment():
+  rospy.init_node('accel_increment')
+  publisher_accel_increment = rospy.Publisher('/gazebo/set_model_state', ModelState, queue_size= 10)
+  rospy.Subscriber('/gazebo/model_states', ModelStates, updateAccel, publisher_accel_increment)
 
 if __name__ == '__main__':
-	accel_increment()
-    
+  accel_increment()
+  rospy.spin()

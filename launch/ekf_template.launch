@@ -4,6 +4,10 @@
   </node>
 
   <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_imu0" args="0.090, 0.009, 0.057 0 0 0 vtec_u3/base_link vtec_u3/imu" />
+ 
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_bar" args="-0.103, 0.031, 0.101 0 0 0 vtec_u3/base_link vtec_u3/pressure_link" />
 
   <node pkg="robot_localization" type="processing.py" name="processing"/>
+  
+  <node pkg="robot_localization" type="accel_increment.py" name="accel_increment"/>
 </launch>
